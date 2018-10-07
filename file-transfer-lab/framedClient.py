@@ -56,12 +56,17 @@ if s is None:
     print('could not open socket')
     sys.exit(1)
 
+# instructions to send a file or a line 
+print("\n\nTo send a file to the server enter: sendfile <filepath>")
+print("To send a line to the server enter: sendline <line>\n")
 
-print("sending hello world")
-framedSend(s, b"hello world", debug)
-print("received:", framedReceive(s, debug))
+# getting input from user
+userInput = input()
 
-print("sending hello world")
-framedSend(s, b"hello world", debug)
-print("received:", framedReceive(s, debug))
+# if user enters a line send line to server 
+if(userInput.startswith('sendline')):
+    line = userInput[9:]
+    framedSend(s, line.encode('UTF-8'), debug)
+    print("received:", framedReceive(s, debug))
+
 
