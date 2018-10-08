@@ -31,10 +31,37 @@ print("connection rec'd from", addr)
 
 from framedSock import framedSend, framedReceive
 
+# setting path for received files
+path='received/'
+filename = ''
+
+fileContent = False
 while True:
     payload = framedReceive(sock, debug)
     if debug: print("rec'd: ", payload)
     if not payload:
         break
-    payload += b"!"             # make emphatic!
-    framedSend(sock, payload, debug)
+    
+    # payload starts with 'filename' server knows that a file is being transfered 
+    if payload.startswith(b"filename"):
+        # filename starts after 'filename'
+        filename = payload[8:].decode()
+        # open new file in folder 'received'
+        f = open(path+filename,"w+")
+        fileContent = True
+        continue
+    
+    # server knows file transfer is over 
+    if payload.startswith(b"ending file transfer"):
+        fileContent = False
+        # close file 
+        f.close()
+        print("%s received!\n\n" % filename)
+        continue
+    
+    # write contents into file 
+    if fileContent:
+        f.write(payload.decode())
+    else:
+        payload += b"!"             # make emphatic!
+        framedSend(sock, payload, debug)

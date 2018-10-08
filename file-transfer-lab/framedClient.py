@@ -56,17 +56,61 @@ if s is None:
     print('could not open socket')
     sys.exit(1)
 
+# Function to open file and send contents to server 
+def sendFile(filename):
+    # except file not found 
+    try:
+        # open file 
+        f=open(filename, "r")
+    except:
+        print("Not an available file, try again.\n")
+        return
+    # first send filename <filepath> to let know user about file    
+    line = 'filename' + filename
+    framedSend(s, line.encode('UTF-8'), debug)
+    
+    # read contents of file 
+    contents =f.read()
+    
+    # send contents to server 
+    framedSend(s, contents.encode('UTF-8'), debug)
+
+    # let know server that file transfer is over 
+    framedSend(s, b"ending file transfer", debug)
+    
+
 # instructions to send a file or a line 
 print("\n\nTo send a file to the server enter: sendfile <filepath>")
-print("To send a line to the server enter: sendline <line>\n")
+print("To send a line to the server enter: sendline <line>")
+print("To exit type 'quit'\n")
 
-# getting input from user
-userInput = input()
-
-# if user enters a line send line to server 
-if(userInput.startswith('sendline')):
-    line = userInput[9:]
-    framedSend(s, line.encode('UTF-8'), debug)
-    print("received:", framedReceive(s, debug))
+while True:
+    # getting input from user
+    userInput = input()
+    
+    # if user enters a line send line to server 
+    if(userInput.startswith('sendline')):
+        # line starts after 'sendline'
+        line = userInput[9:]
+        
+        # send to server 
+        framedSend(s, line.encode('UTF-8'), debug)
+        
+        # 'talking to server'
+        print("received:", framedReceive(s, debug))
+        print('')
+    
+    # send file to server 
+    elif(userInput.startswith('sendfile')):
+        # name of file starts after 'sendfile'
+        filename = userInput[9:]
+        
+        # function to open file and send contents
+        sendFile(filename)
+        
+    elif(userInput == 'quit'):
+        break
+    else:
+        print("Not an available option\n")
 
 
